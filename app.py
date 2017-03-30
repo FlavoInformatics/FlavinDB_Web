@@ -57,7 +57,7 @@ def send_text_file(file_name):
     ###     if you're creative enough pandas has an SQL queiries feature
     ###     which might be useful; however, let me know if you need help
 
-def treat_query(query_str):
+def treat_query():
 
     '''
         expects a query string of the form
@@ -67,6 +67,7 @@ def treat_query(query_str):
 
     '''
 
+    query_str = request.data
     # seperates the query string into the two criteria PDB_IDS and keys
     crit_list = query_str.split('\n')
     pdb_crit = crit_list[0]
