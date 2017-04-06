@@ -50,13 +50,12 @@ def send_text_file(file_name):
         keys=<> a list of all the target atoms in the isoalloxezene; if none, will assume all
 
 '''
-@app.route('/query', methods=['GET']):
-    """ Take the query string and render a CSV with all of the relevant fields. """
-    ### @ Rahul this should be pretty easy:
-    ###     open the data.csv in pandas and make some filters
-    ###     if you're creative enough pandas has an SQL queiries feature
-    ###     which might be useful; however, let me know if you need help
-
+#""" Take the query string and render a CSV with all of the relevant fields. """
+### @ Rahul this should be pretty easy:
+###     open the data.csv in pandas and make some filters
+###     if you're creative enough pandas has an SQL queiries feature
+###     which might be useful; however, let me know if you need help
+@app.route('/query', methods=['GET'])
 def treat_query():
 
     '''
