@@ -77,7 +77,8 @@ def treat_query():
     data_path = os.path.join(folder_path, "data.csv")
 
     # gets path for writing the csv file later
-    file_out_path = os.path.join(folder_path, "output.csv")
+    static_folder_path = os.path.join(folder_path, "static")
+    file_out_path = os.path.join(static_folder_path, "output.csv")
 
     # gets csv file_name
     data_pd = pd.read_csv(data_path)
@@ -92,6 +93,7 @@ def treat_query():
     df_list = []
 
     if ((pdb_crit == "PDB_IDS=<>") and (keys_crit == "keys=<>")):
+        print("tests")
         return app.send_static_file("data.csv")
     elif ((pdb_crit != "PDB_IDS=<>") and (keys_crit != "keys=<>")):
 
