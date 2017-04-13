@@ -39,17 +39,9 @@ def send_text_file(file_name):
 
 @app.route("/<file_name>.txt")
 def send_text_file(file_name):
+    return app.send_static_file(file_name)
 
-    file_dot_text = file_name + ".txt"
-    return app.send_static_file(file_dot_text)
 
-'''
-    expects a query string of the form
-    ?
-        PDB_IDS=<> a list of all the target PDB_IDS comman separated; if empty will assume all in databank
-        keys=<> a list of all the target atoms in the isoalloxezene; if none, will assume all
-
-'''
 #""" Take the query string and render a CSV with all of the relevant fields. """
 ### @ Rahul this should be pretty easy:
 ###     open the data.csv in pandas and make some filters
@@ -58,19 +50,14 @@ def send_text_file(file_name):
 @app.route('/query', methods=['GET'])
 def treat_query():
 
-    '''
-        expects a query string of the form
-        ?
-            PDB_IDS=<> a list of all the target PDB_IDS comman separated; if empty will assume all in databank
-            keys=<> a list of all the target atoms in the isoalloxezene; if none, will assume all
+    '''Will now expect a request in the form:
 
+        /query?PDB_IDS=2dor,1ahv&keys=O2
+
+        and is used like a dictionary.
     '''
 
-    query_str = request.data
-    # seperates the query string into the two criteria PDB_IDS and keys
-    crit_list = query_str.split('\n')
-    pdb_crit = crit_list[0]
-    keys_crit = crit_list[1]
+    query_dict = request.args
 
     # gets path for reading in csv
     folder_path = os.getcwd()
@@ -92,37 +79,41 @@ def treat_query():
 
     df_list = []
 
-    if ((pdb_crit == "PDB_IDS=<>") and (keys_crit == "keys=<>")):
-        print("tests")
-        return app.send_static_file("data.csv")
-    elif ((pdb_crit != "PDB_IDS=<>") and (keys_crit != "keys=<>")):
+    if (("PDB_IDS" not in query_dict) and ("keys" not in query_dict)):
+        return send_text_file("data.csv")
+    elif (("PDB_IDS" in query_dict) and ("keys" in query_dict)):
 
         # gets a list of the relevant pdb ids
-        pdb_ids_str = pdb_crit[9:-1]
+        pdb_ids_str = query_dict["PDB_IDS"]
         pdb_id_list = pdb_ids_str.split(',')
 
+        print("pdb list:")
+        print(pdb_id_list)
         # gets a list of the relevant keys
-        keys_str = keys_crit[6:-1]
+        keys_str = query_dict["keys"]
         keys_list = keys_str.split(',')
 
+        print("keys list:")
+        print(keys_list)
         # gets all relevant rows based on pdb_id and key atoms
         for pdb_key in pdb_id_list:
             for key_id in keys_list:
+                print(data_pd[(data_pd.target_atom_name == key_id) & (data_pd.PDB_ID == pdb_key)])
                 df_list.append(data_pd[(data_pd.target_atom_name == key_id) & (data_pd.PDB_ID == pdb_key)])
 
-        # print(df_list)
 
         # combines all relevant dataframes into one
         df_final = pd.concat(df_list)
 
+        print(df_final)
         # turns dataframe into csv file
         df_final.to_csv(path_or_buf=file_out_path)
 
-        return None
-    elif ((pdb_crit != "PDB_IDS=<>") and (keys_crit == "keys=<>")):
+        return send_text_file("output.csv")
+    elif (("PDB_IDS" in query_dict) and ("keys" not in query_dict)):
 
         # gets a list of the relevant pdb ids
-        pdb_ids_str = pdb_crit[9:-1]
+        pdb_ids_str = query_dict["PDB_IDS"]
         pdb_id_list = pdb_ids_str.split(',')
 
         # makes a list of dataframes for rows that have relvant pdb_id
@@ -135,11 +126,11 @@ def treat_query():
         # turns dataframe to csv file
         df_final.to_csv(path_or_buf=file_out_path)
 
-        return app.send_static_file("output.csv")
+        return send_text_file("output.csv")
     else:
 
         # gets a list of the relevant keys
-        keys_str = keys_crit[6:-1]
+        keys_str = query_dict["keys"]
         keys_list = keys_str.split(',')
 
         # makes a list of dataframes from rows that have relevant keys
@@ -152,7 +143,7 @@ def treat_query():
         # turns dataframe to csv file
         df_final.to_csv(path_or_buf=file_out_path)
 
-        return app.send_static_file("output.csv")
+        return send_text_file("output.csv")
     # incomplete
     return render_template('404.html'), 404
 
